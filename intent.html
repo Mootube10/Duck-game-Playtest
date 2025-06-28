@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duck Evolution Idle Game</title>
+  <style>
+    :root{
+      --primary:#ffd166;
+      --secondary:#06d6a0;
+      --accent:#118ab2;
+      --bg:#cceaff;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      background:var(--bg);
+      color:#333;
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+    }
+    header{
+      background:var(--primary);
+      padding:0.5em 1em;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:0 2px 4px rgba(0,0,0,0.2);
+    }
+    nav button{
+      background:none;
+      border:none;
+      font-size:1em;
+      margin-right:1em;
+      cursor:pointer;
+    }
+    nav button.active{
+      color:var(--accent);
+      font-weight:bold;
+      text-decoration:underline;
+    }
+    #prestigeInfo{font-weight:bold;}
+    #cornDisplay { font-weight: bold; }
+    main{
+      flex:1;
+      overflow:auto;
+      padding:1em;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    section{display:none;width:100%;max-width:800px;}
+    section.active{display:block;}
+    .egg{
+      width:150px;height:200px;
+      background:url('https://upload.wikimedia.org/wikipedia/commons/6/6e/Egg.svg') center/contain no-repeat;
+      cursor:pointer;
+      margin:1em auto;
+    }
+    .duck-card{
+      display:inline-block;
+      width:120px;
+      padding:0.5em;
+      margin:0.5em;
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+      text-align:center;
+    }
+    .duck-card img{
+      width:80px;height:80px;
+      object-fit:contain;
+    }
+    .btn{
+      background:var(--secondary);
+      color:#fff;
+      border:none;
+      border-radius:6px;
+      padding:0.3em 0.6em;
+      margin-top:0.3em;
+      cursor:pointer;
+    }
+    #duckdexList .breed{
+      display:flex;
+      align-items:center;
+      margin:0.3em 0;
+      padding:0.3em;
+      background:#fff;
+      border-radius:6px;
+    }
+    #duckdexList .breed.discovered{background:var(--secondary);color:#fff;}
+    .upgrade{
+      background:#fff;padding:0.6em;margin:0.5em 0;border-radius:8px;display:flex;justify-content:space-between;align-items:center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <button data-tab="hatchery" class="active">Hatchery</button>
+      <button data-tab="breeding">Breeding</button>
+      <button data-tab="duckdex">Duckdex</button>
+      <button data-tab="upgrades">Upgrades</button>
+      <button data-tab="prestige">Prestige</button>
+    </nav>
+    <div>
+      <div id="cornDisplay">🌽 Corn: 0</div>
+      <div id="prestigeInfo">Prestige: 0 (x1)</div>
+    </div>
+  </header>
+  <main>
+    <!-- content remains the same -->
+  </main>
+  <script>
+    // After all existing code
+    const cornDisplay = document.getElementById('cornDisplay');
+
+    function updateCornDisplay() {
+      cornDisplay.textContent = `🌽 Corn: ${Math.floor(game.corn)}`;
+    }
+
+    // Idle income every second
+    setInterval(() => {
+      const income = 1 * game.prestige.multiplier;
+      game.corn += income;
+      updateCornDisplay();
+    }, 1000);
+
+    // Complete breeding function
+    breedBtn.addEventListener('click', () => {
+      if (selectedForBreeding.length !== 2) return;
+      const parents = selectedForBreeding.map(id => game.ducks.find(d => d.id === id));
+      const avgIndex = Math.round(parents.reduce((sum, d) => sum + breeds.findIndex(b => b.name === d.breed), 0) / 2);
+      hatchDuck(avgIndex);
+      selectedForBreeding = [];
+      document.querySelectorAll('.duck-card').forEach(c => c.style.outline = '');
+      breedBtn.disabled = true;
+    });
+
+    // Prestige
+    prestigeBtn.addEventListener('click', () => {
+      if (game.ducks.length < 10) return alert("Hatch at least 10 ducks to Prestige!");
+      game.prestige.points++;
+      game.prestige.multiplier++;
+      game.corn = 0;
+      game.hatchCost = 10;
+      game.ducks = [];
+      game.nextId = 1;
+      game.discovered = {};
+      duckList.innerHTML = '';
+      updateCornDisplay();
+      updatePrestigeInfo();
+      refreshDuckdex();
+    });
+  </script>
+</body>
+</html>
