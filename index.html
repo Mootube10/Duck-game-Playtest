@@ -1,159 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Duck Evolution Idle Game</title>
-  <style>
-    :root{
-      --primary:#ffd166;
-      --secondary:#06d6a0;
-      --accent:#118ab2;
-      --bg:#cceaff;
-    }
-    *{box-sizing:border-box;}
-    body{
-      margin:0;
-      font-family:'Segoe UI',sans-serif;
-      background:var(--bg);
-      color:#333;
-      display:flex;
-      flex-direction:column;
-      height:100vh;
-    }
-    header{
-      background:var(--primary);
-      padding:0.5em 1em;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      box-shadow:0 2px 4px rgba(0,0,0,0.2);
-    }
-    nav button{
-      background:none;
-      border:none;
-      font-size:1em;
-      margin-right:1em;
-      cursor:pointer;
-    }
-    nav button.active{
-      color:var(--accent);
-      font-weight:bold;
-      text-decoration:underline;
-    }
-    #prestigeInfo{font-weight:bold;}
-    #cornDisplay { font-weight: bold; }
-    main{
-      flex:1;
-      overflow:auto;
-      padding:1em;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-    }
-    section{display:none;width:100%;max-width:800px;}
-    section.active{display:block;}
-    .egg{
-      width:150px;height:200px;
-      background:url('https://upload.wikimedia.org/wikipedia/commons/6/6e/Egg.svg') center/contain no-repeat;
-      cursor:pointer;
-      margin:1em auto;
-    }
-    .duck-card{
-      display:inline-block;
-      width:120px;
-      padding:0.5em;
-      margin:0.5em;
-      background:#fff;
-      border-radius:12px;
-      box-shadow:0 2px 4px rgba(0,0,0,0.1);
-      text-align:center;
-    }
-    .duck-card img{
-      width:80px;height:80px;
-      object-fit:contain;
-    }
-    .btn{
-      background:var(--secondary);
-      color:#fff;
-      border:none;
-      border-radius:6px;
-      padding:0.3em 0.6em;
-      margin-top:0.3em;
-      cursor:pointer;
-    }
-    #duckdexList .breed{
-      display:flex;
-      align-items:center;
-      margin:0.3em 0;
-      padding:0.3em;
-      background:#fff;
-      border-radius:6px;
-    }
-    #duckdexList .breed.discovered{background:var(--secondary);color:#fff;}
-    .upgrade{
-      background:#fff;padding:0.6em;margin:0.5em 0;border-radius:8px;display:flex;justify-content:space-between;align-items:center;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ducktopia: Rise of the Feathered (Prototype)</title>
+    <!-- Google Font for fun header -->
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --pond-blue: #7ec8e3;
+            --pond-dark: #235f75;
+            --feather-yellow: #f9e79f;
+            --mythic: #ff8cfa;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: var(--pond-blue);
+            color: #222;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            font-family: "Luckiest Guy", cursive;
+            font-size: 2.5rem;
+            text-align: center;
+            padding: 0.5rem;
+            color: #fff;
+            text-shadow: 2px 2px 0 var(--pond-dark);
+        }
+
+        #game {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* LEFT PANEL */
+        #controls {
+            width: 220px;
+            background: #fff8e1;
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            font-size: 1rem;
+            padding: 0.6rem 0.4rem;
+            border: none;
+            border-radius: 0.6rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .primary {
+            background: var(--pond-dark);
+            color: #fff;
+        }
+
+        .secondary {
+            background: var(--feather-yellow);
+        }
+
+        .danger {
+            background: #e86060;
+            color: #fff;
+        }
+
+        /* RIGHT PANEL */
+        #pond {
+            flex: 1;
+            background: url("https://images.unsplash.com/photo-1505144808419-1957a94ca174?auto=format&fit=crop&w=1200&q=60") center/cover no-repeat;
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #duck-list {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: 40%;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.8);
+            padding: 0.5rem;
+        }
+
+        #duck-list li {
+            list-style: none;
+            margin: 0.25rem 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        .common { background: #e8f7fa; }
+        .rare { background: #d4f5d4; }
+        .epic { background: #f5d4f9; }
+        .mythic { background: var(--mythic); color: #fff; }
+
+        #status-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            padding: 0.4rem 0.6rem;
+            border-bottom-left-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <button data-tab="hatchery" class="active">Hatchery</button>
-      <button data-tab="breeding">Breeding</button>
-      <button data-tab="duckdex">Duckdex</button>
-      <button data-tab="upgrades">Upgrades</button>
-      <button data-tab="prestige">Prestige</button>
-    </nav>
-    <div>
-      <div id="cornDisplay">🌽 Corn: 0</div>
-      <div id="prestigeInfo">Prestige: 0 (x1)</div>
+    <header>Ducktopia: Rise of the Feathered</header>
+
+    <div id="game">
+        <div id="controls">
+            <button id="btn-hatch" class="primary">🥚 Hatch Egg</button>
+            <button id="btn-feed" class="secondary">🍞 Feed All Ducks</button>
+            <button id="btn-prestige" class="danger" disabled>🔁 Prestige</button>
+            <hr />
+            <p><strong>DNA:</strong> <span id="dna">0</span></p>
+            <p><strong>Bread:</strong> <span id="bread">10</span></p>
+        </div>
+
+        <div id="pond">
+            <div id="status-bar">
+                Ducks: <span id="duck-count">0</span>
+            </div>
+            <ul id="duck-list"></ul>
+        </div>
     </div>
-  </header>
-  <main>
-    <!-- content remains the same -->
-  </main>
-  <script>
-    // After all existing code
-    const cornDisplay = document.getElementById('cornDisplay');
 
-    function updateCornDisplay() {
-      cornDisplay.textContent = `🌽 Corn: ${Math.floor(game.corn)}`;
-    }
+    <script>
+        /**
+         * Ducktopia Prototype JS
+         * (c) 2025 Your Studio. MIT License.
+         * This is a lightweight idle/evolution prototype built in one file.
+         * Expand features, split into modules, or migrate to a framework as needed.
+         */
 
-    // Idle income every second
-    setInterval(() => {
-      const income = 1 * game.prestige.multiplier;
-      game.corn += income;
-      updateCornDisplay();
-    }, 1000);
+        const rarities = [
+            { name: "common", weight: 70 },
+            { name: "rare", weight: 20 },
+            { name: "epic", weight: 9 },
+            { name: "mythic", weight: 1 },
+        ];
 
-    // Complete breeding function
-    breedBtn.addEventListener('click', () => {
-      if (selectedForBreeding.length !== 2) return;
-      const parents = selectedForBreeding.map(id => game.ducks.find(d => d.id === id));
-      const avgIndex = Math.round(parents.reduce((sum, d) => sum + breeds.findIndex(b => b.name === d.breed), 0) / 2);
-      hatchDuck(avgIndex);
-      selectedForBreeding = [];
-      document.querySelectorAll('.duck-card').forEach(c => c.style.outline = '');
-      breedBtn.disabled = true;
-    });
+        class Duck {
+            constructor(id) {
+                this.id = id;
+                this.level = 1;
+                this.xp = 0;
+                this.rarity = Duck.randomRarity();
+            }
 
-    // Prestige
-    prestigeBtn.addEventListener('click', () => {
-      if (game.ducks.length < 10) return alert("Hatch at least 10 ducks to Prestige!");
-      game.prestige.points++;
-      game.prestige.multiplier++;
-      game.corn = 0;
-      game.hatchCost = 10;
-      game.ducks = [];
-      game.nextId = 1;
-      game.discovered = {};
-      duckList.innerHTML = '';
-      updateCornDisplay();
-      updatePrestigeInfo();
-      refreshDuckdex();
-    });
-  </script>
+            static randomRarity() {
+                const total = rarities.reduce((a, b) => a + b.weight, 0);
+                const roll = Math.random() * total;
+                let acc = 0;
+                for (const r of rarities) {
+                    acc += r.weight;
+                    if (roll < acc) return r.name;
+                }
+                return "common";
+            }
+
+            feed() {
+                this.xp += 10;
+                if (this.xp >= this.level * 50) {
+                    this.xp = 0;
+                    this.level++;
+                }
+            }
+        }
+
+        const state = {
+            ducks: [],
+            bread: 10,
+            dna: 0, // prestige currency
+            idCounter: 1,
+        };
+
+        // ---------- DOM References ----------
+        const elDuckList = document.getElementById("duck-list");
+        const elDuckCount = document.getElementById("duck-count");
+        const elBread = document.getElementById("bread");
+        const elDNA = document.getElementById("dna");
+        const btnHatch = document.getElementById("btn-hatch");
+        const btnFeed = document.getElementById("btn-feed");
+        const btnPrestige = document.getElementById("btn-prestige");
+
+        // ---------- Game Logic ----------
+        function hatchDuck() {
+            const cost = 5;
+            if (state.bread < cost) {
+                alert("Not enough bread! Earn more or wait for passive income.");
+                return;
+            }
+            state.bread -= cost;
+            const newDuck = new Duck(state.idCounter++);
+            state.ducks.push(newDuck);
+            updateUI();
+        }
+
+        function feedAllDucks() {
+            if (state.ducks.length === 0) return;
+            const costPerDuck = 1;
+            const totalCost = costPerDuck * state.ducks.length;
+            if (state.bread < totalCost) {
+                alert("Not enough bread to feed everyone!");
+                return;
+            }
+            state.bread -= totalCost;
+            state.ducks.forEach((d) => d.feed());
+            updateUI();
+        }
+
+        function updateUI() {
+            // Counters
+            elDuckCount.textContent = state.ducks.length;
+            elBread.textContent = state.bread;
+            elDNA.textContent = state.dna;
+
+            // List
+            elDuckList.innerHTML = "";
+            state.ducks.forEach((d) => {
+                const li = document.createElement("li");
+                li.className = d.rarity;
+                li.innerHTML = `🦆 Duck #${d.id} <span>Lv ${d.level}</span>`;
+                elDuckList.appendChild(li);
+            });
+
+            // Enable prestige when 10+ ducks level 5+
+            const eligible = state.ducks.filter((d) => d.level >= 5).length;
+            btnPrestige.disabled = eligible < 10;
+        }
+
+        function passiveIncomeTick() {
+            state.bread += 1 + state.ducks.length; // base + per duck
+            updateUI();
+        }
+
+        function prestige() {
+            if (btnPrestige.disabled) return;
+            const gainedDNA = state.ducks.length;
+            if (!confirm(`Reset for +${gainedDNA} DNA?`)) return;
+            state.dna += gainedDNA;
+            // reset ducks and bread but keep DNA
+            state.ducks = [];
+            state.bread = 10 + state.dna; // each DNA gives starting bread boost
+            updateUI();
+        }
+
+        // ---------- Event Listeners ----------
+        btnHatch.addEventListener("click", hatchDuck);
+        btnFeed.addEventListener("click", feedAllDucks);
+        btnPrestige.addEventListener("click", prestige);
+
+        // ---------- Game Loop ----------
+        setInterval(passiveIncomeTick, 5000); // every 5 seconds
+
+        // First paint
+        updateUI();
+    </script>
 </body>
 </html>
