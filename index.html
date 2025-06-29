@@ -3,285 +3,496 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ducktopia: Rise of the Feathered (Prototype)</title>
-    <!-- Google Font for fun header -->
+    <title>Ducktopia: Rise of the Feathered</title>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet" />
     <style>
+        /* ---------- CSS Variables ---------- */
         :root {
             --pond-blue: #7ec8e3;
             --pond-dark: #235f75;
             --feather-yellow: #f9e79f;
+            --rare: #d4f5d4;
+            --epic: #f5d4f9;
             --mythic: #ff8cfa;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
+        /* ---------- Reset & Globals ---------- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            margin: 0;
             font-family: system-ui, sans-serif;
             background: var(--pond-blue);
             color: #222;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
         }
-
         header {
             font-family: "Luckiest Guy", cursive;
-            font-size: 2.5rem;
-            text-align: center;
+            font-size: 2.7rem;
             padding: 0.5rem;
+            text-align: center;
             color: #fff;
             text-shadow: 2px 2px 0 var(--pond-dark);
         }
 
-        #game {
+        /* ---------- Main Layout ---------- */
+        #app {
             flex: 1;
-            display: flex;
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: 240px 1fr;
             gap: 1rem;
             padding: 1rem;
         }
 
-        /* LEFT PANEL */
-        #controls {
-            width: 220px;
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
             background: #fff8e1;
             border-radius: 1rem;
             padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-
-        button {
+        nav button {
+            padding: 0.6rem;
             font-size: 1rem;
-            padding: 0.6rem 0.4rem;
             border: none;
             border-radius: 0.6rem;
             cursor: pointer;
             transition: transform 0.1s;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-        }
-
-        .primary {
+        nav button:hover { transform: translateY(-2px); }
+        nav .active {
             background: var(--pond-dark);
             color: #fff;
         }
 
-        .secondary {
-            background: var(--feather-yellow);
-        }
-
-        .danger {
-            background: #e86060;
-            color: #fff;
-        }
-
-        /* RIGHT PANEL */
-        #pond {
-            flex: 1;
-            background: url("https://images.unsplash.com/photo-1505144808419-1957a94ca174?auto=format&fit=crop&w=1200&q=60") center/cover no-repeat;
+        /* ---------- Section Panels ---------- */
+        .panel {
+            background: #ffffffee;
             border-radius: 1rem;
+            padding: 1rem;
+            height: 100%;
+            overflow: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .panel.active { display: block; }
+
+        /* ---------- Pond Panel ---------- */
+        #pond-panel {
             position: relative;
-            overflow: hidden;
+            background: url("https://images.unsplash.com/photo-1505144808419-1957a94ca174?auto=format&fit=crop&w=1400&q=60") center/cover no-repeat;
         }
-
-        #duck-list {
+        #pond-panel .duck {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            max-height: 40%;
-            overflow-y: auto;
-            background: rgba(255,255,255,0.8);
-            padding: 0.5rem;
+            width: 64px;
+            height: 64px;
+            background: url('https://raw.githubusercontent.com/nathan-pham/duck-sprites/main/duck_idle.png') center/contain no-repeat;
+            animation: float 3s ease-in-out infinite;
+            cursor: pointer;
         }
-
-        #duck-list li {
-            list-style: none;
-            margin: 0.25rem 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0.3rem 0.5rem;
-            border-radius: 0.3rem;
-        }
-
-        .common { background: #e8f7fa; }
-        .rare { background: #d4f5d4; }
-        .epic { background: #f5d4f9; }
-        .mythic { background: var(--mythic); color: #fff; }
-
-        #status-bar {
+        @keyframes float { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-8px);} }
+        #status {
             position: absolute;
             top: 0;
             right: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
             color: #fff;
-            padding: 0.4rem 0.6rem;
-            border-bottom-left-radius: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-bottom-left-radius: 0.6rem;
             font-size: 0.9rem;
         }
+        /* Rarity Colors */
+        .common { filter: none; }
+        .rare   { filter: hue-rotate(80deg); }
+        .epic   { filter: hue-rotate(200deg); }
+        .mythic { filter: hue-rotate(300deg) brightness(1.3); }
+
+        /* ---------- Breeding Panel ---------- */
+        #breeding-panel select,
+        #breeding-panel button {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            padding: 0.4rem;
+        }
+        #offspring-preview { margin-top: 1rem; font-weight: bold; }
+
+        /* ---------- Habitat Panel ---------- */
+        #habitat-panel .building {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+            padding: 0.6rem;
+            background: #f7f7f7;
+            border-radius: 0.6rem;
+        }
+        #habitat-panel .building button { padding: 0.4rem 0.6rem; }
+
+        /* ---------- Duckdex Panel ---------- */
+        #duckdex-panel li {
+            list-style: none; margin: 0.3rem 0;
+        }
+
+        /* ---------- Goals Panel ---------- */
+        #goals-panel li { list-style: none; margin: 0.4rem 0; }
+        .goal-complete { text-decoration: line-through; color: gray; }
     </style>
 </head>
 <body>
-    <header>Ducktopia: Rise of the Feathered</header>
+<header>Ducktopia: Rise of the Feathered</header>
+<div id="app">
+    <!-- Sidebar Navigation -->
+    <nav>
+        <button data-panel="pond" class="active">🐥 Pond</button>
+        <button data-panel="breeding">🧬 Breeding</button>
+        <button data-panel="habitat">🏡 Habitat</button>
+        <button data-panel="duckdex">📖 Duckdex</button>
+        <button data-panel="goals">🎯 Goals</button>
+        <hr />
+        <button id="prestige-btn">🔁 Prestige</button>
+        <p style="margin-top:0.5rem;"><strong>DNA:</strong> <span id="dna">0</span></p>
+        <p><strong>Bread:</strong> <span id="bread">10</span></p>
+    </nav>
 
-    <div id="game">
-        <div id="controls">
-            <button id="btn-hatch" class="primary">🥚 Hatch Egg</button>
-            <button id="btn-feed" class="secondary">🍞 Feed All Ducks</button>
-            <button id="btn-prestige" class="danger" disabled>🔁 Prestige</button>
-            <hr />
-            <p><strong>DNA:</strong> <span id="dna">0</span></p>
-            <p><strong>Bread:</strong> <span id="bread">10</span></p>
-        </div>
+    <!-- Pond Panel -->
+    <section id="pond-panel" class="panel active">
+        <div id="status">Ducks: <span id="duck-count">0</span></div>
+        <!-- ducks rendered here -->
+    </section>
 
-        <div id="pond">
-            <div id="status-bar">
-                Ducks: <span id="duck-count">0</span>
-            </div>
-            <ul id="duck-list"></ul>
-        </div>
-    </div>
+    <!-- Breeding Panel -->
+    <section id="breeding-panel" class="panel">
+        <h2>Breeding Lab</h2>
+        <label>Parent A: <select id="parentA"></select></label><br />
+        <label>Parent B: <select id="parentB"></select></label><br />
+        <button id="breed-btn">Breed!</button>
+        <div id="offspring-preview"></div>
+    </section>
 
-    <script>
-        /**
-         * Ducktopia Prototype JS
-         * (c) 2025 Your Studio. MIT License.
-         * This is a lightweight idle/evolution prototype built in one file.
-         * Expand features, split into modules, or migrate to a framework as needed.
-         */
+    <!-- Habitat Panel -->
+    <section id="habitat-panel" class="panel">
+        <h2>Habitat Upgrades</h2>
+        <div id="buildings"></div>
+    </section>
 
-        const rarities = [
-            { name: "common", weight: 70 },
-            { name: "rare", weight: 20 },
-            { name: "epic", weight: 9 },
-            { name: "mythic", weight: 1 },
-        ];
+    <!-- Duckdex Panel -->
+    <section id="duckdex-panel" class="panel">
+        <h2>Duckdex</h2>
+        <ul id="duckdex-list"></ul>
+    </section>
 
-        class Duck {
-            constructor(id) {
-                this.id = id;
-                this.level = 1;
-                this.xp = 0;
-                this.rarity = Duck.randomRarity();
-            }
+    <!-- Goals Panel -->
+    <section id="goals-panel" class="panel">
+        <h2>Daily Goals & Achievements</h2>
+        <ul id="goals-list"></ul>
+    </section>
+</div>
 
-            static randomRarity() {
-                const total = rarities.reduce((a, b) => a + b.weight, 0);
-                const roll = Math.random() * total;
-                let acc = 0;
-                for (const r of rarities) {
-                    acc += r.weight;
-                    if (roll < acc) return r.name;
-                }
-                return "common";
-            }
+<!-- Background Music & SFX -->
+<audio id="bgm" src="https://cdn.pixabay.com/audio/2022/03/22/audio_af4d1b0e60.mp3" loop></audio>
+<audio id="quack-sfx" src="https://cdn.pixabay.com/audio/2022/11/10/audio_d0121b4215.mp3"></audio>
 
-            feed() {
-                this.xp += 10;
-                if (this.xp >= this.level * 50) {
-                    this.xp = 0;
-                    this.level++;
-                }
-            }
+<script>
+/**********************
+ * Ducktopia Advanced Prototype
+ * All-in-one file for rapid iteration.
+ * Save/Load enabled via localStorage.
+ **********************/
+
+// ---------- Utility ----------
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+// ---------- Data ----------
+const rarities = [
+    { name: "common", weight: 70 },
+    { name: "rare", weight: 20 },
+    { name: "epic", weight: 9 },
+    { name: "mythic", weight: 1 },
+];
+const traitsPool = [ "Sleepy", "Greedy", "Wise", "Swift", "Chill", "Ninja" ];
+const buildingsData = [
+    { id: "bread-bakery", name: "Bread Bakery", level: 0, baseCost: 50, breadPerTick: 2 },
+    { id: "training-gym", name: "Training Gym", level: 0, baseCost: 75, xpBoost: 0.1 },
+    { id: "lux-pond", name: "Luxury Pond", level: 0, baseCost: 100, hatchRarityBoost: 0.05 },
+];
+const goalsData = [
+    { id: "hatch5", text: "Hatch 5 Ducks", condition: (s)=>s.stats.hatched>=5, reward: { bread:20 } },
+    { id: "mythic1", text: "Get 1 Mythic Duck", condition: (s)=>s.ducks.some(d=>d.rarity==='mythic'), reward: { dna:1 } },
+];
+
+// ---------- Classes ----------
+class Duck {
+    constructor(id, rarity=null, traits=[]) {
+        this.id = id;
+        this.level = 1;
+        this.xp = 0;
+        this.rarity = rarity || Duck.randomRarity();
+        this.traits = traits.length? traits : Duck.randomTraits();
+    }
+    static randomRarity() {
+        const total = rarities.reduce((a,b)=>a+b.weight,0);
+        let roll = Math.random()*total;
+        for(const r of rarities){
+            if(roll<r.weight) return r.name;
+            roll-=r.weight;
         }
+        return 'common';
+    }
+    static randomTraits(){
+        return [traitsPool[Math.floor(Math.random()*traitsPool.length)]];
+    }
+    feed(xpBoost=1){
+        const gain = 10 * xpBoost;
+        this.xp += gain;
+        if(this.xp >= this.level*50){
+            this.xp = 0;
+            this.level++;
+        }
+    }
+}
 
-        const state = {
-            ducks: [],
-            bread: 10,
-            dna: 0, // prestige currency
-            idCounter: 1,
+class Building {
+    constructor(data){
+        Object.assign(this, JSON.parse(JSON.stringify(data)));
+    }
+    upgrade(costMultiplier=1){
+        const cost = Math.floor(this.baseCost*Math.pow(1.7,this.level));
+        if(state.bread < cost) return false;
+        state.bread -= cost;
+        this.level++;
+        return true;
+    }
+    getEffect(){
+        if(this.id==='bread-bakery') return { breadPerTick: this.breadPerTick*this.level };
+        if(this.id==='training-gym') return { xpBoost: this.xpBoost*this.level };
+        if(this.id==='lux-pond') return { rarityBoost: this.hatchRarityBoost*this.level };
+        return {};
+    }
+}
+
+// ---------- State ----------
+let state = {
+    idCounter: 1,
+    ducks: [],
+    bread: 10,
+    dna: 0,
+    buildings: buildingsData.map(b=>new Building(b)),
+    stats: { hatched:0 },
+    goals: goalsData.map(g=>({...g, complete:false})),
+};
+
+// ---------- Load / Save ----------
+function save(){ localStorage.setItem('ducktopia', JSON.stringify(state)); }
+function load(){
+    const data = JSON.parse(localStorage.getItem('ducktopia')||'null');
+    if(data){
+        // deep revive
+        state = {
+            ...data,
+            ducks: data.ducks.map(d=>Object.assign(new Duck(),d)),
+            buildings: data.buildings.map(b=>Object.assign(new Building({}),b)),
         };
+    }
+}
+load();
 
-        // ---------- DOM References ----------
-        const elDuckList = document.getElementById("duck-list");
-        const elDuckCount = document.getElementById("duck-count");
-        const elBread = document.getElementById("bread");
-        const elDNA = document.getElementById("dna");
-        const btnHatch = document.getElementById("btn-hatch");
-        const btnFeed = document.getElementById("btn-feed");
-        const btnPrestige = document.getElementById("btn-prestige");
+// ---------- UI Rendering ----------
+const pondPanel = $('#pond-panel');
+function renderPond(){
+    pondPanel.innerHTML='';
+    const status = document.createElement('div');
+    status.id='status';
+    status.innerHTML = `Ducks: <span id="duck-count">${state.ducks.length}</span>`;
+    pondPanel.appendChild(status);
+    state.ducks.forEach(d=>{
+        const el = document.createElement('div');
+        el.className = `duck ${d.rarity}`;
+        el.style.left = Math.random()*80+10+'%';
+        el.style.top = Math.random()*60+20+'%';
+        el.title = `Duck #${d.id} (Lv ${d.level})\n${d.traits.join(', ')}`;
+        el.addEventListener('click',()=>{
+            playQuack();
+            d.feed(1.5); // click feed bonus
+            update();
+        });
+        pondPanel.appendChild(el);
+    });
+}
 
-        // ---------- Game Logic ----------
-        function hatchDuck() {
-            const cost = 5;
-            if (state.bread < cost) {
-                alert("Not enough bread! Earn more or wait for passive income.");
-                return;
-            }
-            state.bread -= cost;
-            const newDuck = new Duck(state.idCounter++);
-            state.ducks.push(newDuck);
-            updateUI();
+function renderBreeding(){
+    const parentA = $('#parentA');
+    const parentB = $('#parentB');
+    [parentA,parentB].forEach(sel=>{ sel.innerHTML='<option value="">-- Select --</option>'; });
+    state.ducks.forEach(d=>{
+        const opt = document.createElement('option');
+        opt.value = d.id; opt.textContent = `#${d.id} (${d.rarity}) Lv${d.level}`;
+        parentA.appendChild(opt.cloneNode(true));
+        parentB.appendChild(opt);
+    });
+}
+
+function renderBuildings(){
+    const wrap = $('#buildings');
+    wrap.innerHTML='';
+    state.buildings.forEach(b=>{
+        const div = document.createElement('div');
+        div.className='building';
+        const cost = Math.floor(b.baseCost*Math.pow(1.7,b.level));
+        div.innerHTML = `<span>${b.name} Lv${b.level}</span> <button data-id="${b.id}">Upgrade (${cost})</button>`;
+        wrap.appendChild(div);
+    });
+}
+
+function renderDuckdex(){
+    const list = $('#duckdex-list');
+    list.innerHTML='';
+    const groups = new Set(state.ducks.map(d=>d.rarity));
+    rarities.forEach(r=>{
+        const li = document.createElement('li');
+        li.textContent = `${r.name.toUpperCase()}: ${groups.has(r.name)?'✔️':'❌'}`;
+        list.appendChild(li);
+    });
+}
+
+function renderGoals(){
+    const ul = $('#goals-list');
+    ul.innerHTML='';
+    state.goals.forEach(g=>{
+        const li = document.createElement('li');
+        li.textContent = g.text;
+        if(g.complete) li.className='goal-complete';
+        ul.appendChild(li);
+    });
+}
+
+function updateNavCounts(){
+    $('#bread').textContent = state.bread;
+    $('#dna').textContent = state.dna;
+}
+
+function update(){
+    renderPond();
+    renderBreeding();
+    renderBuildings();
+    renderDuckdex();
+    renderGoals();
+    updateNavCounts();
+    save();
+}
+
+// ---------- Mechanics ----------
+function hatchDuck(){
+    const cost = 5;
+    if(state.bread < cost){ alert('Not enough bread!'); return; }
+    state.bread -= cost;
+    // rarity boost from building
+    const lux = state.buildings.find(b=>b.id==='lux-pond').getEffect().rarityBoost||0;
+    const rarity = Math.random()<lux? 'rare' : null;
+    const duck = new Duck(state.idCounter++, rarity);
+    state.ducks.push(duck);
+    state.stats.hatched++;
+    checkGoals();
+    update();
+}
+
+function breed(){
+    const a = parseInt($('#parentA').value);
+    const b = parseInt($('#parentB').value);
+    if(!a||!b||a===b){ alert('Pick two different parents!'); return; }
+    const d1 = state.ducks.find(d=>d.id===a);
+    const d2 = state.ducks.find(d=>d.id===b);
+    const traits = Array.from(new Set([...d1.traits, ...d2.traits])).slice(0,2);
+    const rarity = Math.random()<0.05? 'epic' : (Math.random()<0.25? 'rare':'common');
+    const baby = new Duck(state.idCounter++, rarity, traits);
+    state.ducks.push(baby);
+    $('#offspring-preview').textContent = `🥚 You bred a ${rarity.toUpperCase()} duck with traits: ${traits.join(', ')}`;
+    state.stats.hatched++;
+    checkGoals();
+    update();
+}
+
+function feedAll(){
+    const cost = state.ducks.length;
+    if(state.bread < cost){ alert('Not enough bread!'); return; }
+    const xpBoost = 1 + (state.buildings.find(b=>b.id==='training-gym').getEffect().xpBoost||0);
+    state.bread -= cost;
+    state.ducks.forEach(d=>d.feed(xpBoost));
+    update();
+}
+
+function prestige(){
+    const gain = Math.floor(state.ducks.length/5);
+    if(gain===0){ alert('Raise more ducks first!'); return; }
+    if(!confirm(`Restart and gain ${gain} DNA?`)) return;
+    state.dna += gain;
+    state.ducks=[];
+    state.bread = 10 + state.dna;
+    state.buildings.forEach(b=>b.level=0);
+    state.goals.forEach(g=>g.complete=false);
+    update();
+}
+
+function passiveTick(){
+    const breadPerTick = 1 + state.ducks.length + (state.buildings.find(b=>b.id==='bread-bakery').getEffect().breadPerTick||0);
+    state.bread += breadPerTick;
+    state.ducks.forEach(d=>d.feed(0.05)); // small idle xp
+    updateNavCounts();
+    save();
+}
+
+function checkGoals(){
+    state.goals.forEach(g=>{
+        if(!g.complete && g.condition(state)){
+            g.complete = true;
+            if(g.reward.bread) state.bread += g.reward.bread;
+            if(g.reward.dna) state.dna += g.reward.dna;
+            alert(`Goal Complete: ${g.text}! Reward received.`);
         }
+    });
+}
 
-        function feedAllDucks() {
-            if (state.ducks.length === 0) return;
-            const costPerDuck = 1;
-            const totalCost = costPerDuck * state.ducks.length;
-            if (state.bread < totalCost) {
-                alert("Not enough bread to feed everyone!");
-                return;
-            }
-            state.bread -= totalCost;
-            state.ducks.forEach((d) => d.feed());
-            updateUI();
-        }
+// ---------- Event Listeners ----------
+// Sidebar nav
+$$('nav button[data-panel]').forEach(btn=>btn.addEventListener('click',()=>{
+    $$('.panel').forEach(p=>p.classList.remove('active'));
+    $$('nav button[data-panel]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $('#'+btn.dataset.panel+'-panel').classList.add('active');
+}));
 
-        function updateUI() {
-            // Counters
-            elDuckCount.textContent = state.ducks.length;
-            elBread.textContent = state.bread;
-            elDNA.textContent = state.dna;
+// Pond interactions
+pondPanel.addEventListener('dblclick', hatchDuck); // double-click pond to hatch
 
-            // List
-            elDuckList.innerHTML = "";
-            state.ducks.forEach((d) => {
-                const li = document.createElement("li");
-                li.className = d.rarity;
-                li.innerHTML = `🦆 Duck #${d.id} <span>Lv ${d.level}</span>`;
-                elDuckList.appendChild(li);
-            });
+// Breeding
+$('#breed-btn').addEventListener('click', breed);
 
-            // Enable prestige when 10+ ducks level 5+
-            const eligible = state.ducks.filter((d) => d.level >= 5).length;
-            btnPrestige.disabled = eligible < 10;
-        }
+// Buildings
+$('#habitat-panel').addEventListener('click', e=>{
+    if(e.target.tagName!=='BUTTON') return;
+    const b = state.buildings.find(x=>x.id===e.target.dataset.id);
+    if(b.upgrade()){ update(); }
+});
 
-        function passiveIncomeTick() {
-            state.bread += 1 + state.ducks.length; // base + per duck
-            updateUI();
-        }
+// Prestige
+$('#prestige-btn').addEventListener('click', prestige);
 
-        function prestige() {
-            if (btnPrestige.disabled) return;
-            const gainedDNA = state.ducks.length;
-            if (!confirm(`Reset for +${gainedDNA} DNA?`)) return;
-            state.dna += gainedDNA;
-            // reset ducks and bread but keep DNA
-            state.ducks = [];
-            state.bread = 10 + state.dna; // each DNA gives starting bread boost
-            updateUI();
-        }
+// Feed all via hotkey "F"
+document.addEventListener('keydown',e=>{ if(e.key==='f') feedAll(); });
 
-        // ---------- Event Listeners ----------
-        btnHatch.addEventListener("click", hatchDuck);
-        btnFeed.addEventListener("click", feedAllDucks);
-        btnPrestige.addEventListener("click", prestige);
+// ---------- Audio ----------
+const bgm = $('#bgm');
+const quack = $('#quack-sfx');
+function initAudio(){ bgm.volume=0.3; bgm.play().catch(()=>{}); }
+function playQuack(){ quack.currentTime=0; quack.play(); }
+window.addEventListener('click', initAudio, { once:true });
 
-        // ---------- Game Loop ----------
-        setInterval(passiveIncomeTick, 5000); // every 5 seconds
-
-        // First paint
-        updateUI();
-    </script>
+// ---------- Start ----------
+update();
+setInterval(passiveTick, 5000);
+</script>
 </body>
 </html>
